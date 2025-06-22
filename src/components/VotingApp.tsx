@@ -48,7 +48,7 @@ export function VotingApp() {
                 多数決アプリ
               </CardTitle>
               <p className="text-center text-muted-foreground">
-                簡単に投票を作成して、みんなで決めましょう！
+                簡易版
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
