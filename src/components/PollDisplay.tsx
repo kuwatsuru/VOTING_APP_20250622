@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useSupabaseVotingStore } from '@/lib/supabaseStore';
-import { CheckCircle, Vote, Eye } from 'lucide-react';
+import { Vote, Eye } from 'lucide-react';
 
 interface PollDisplayProps {
   pollId: string;

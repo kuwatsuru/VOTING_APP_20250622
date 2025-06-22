@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Poll, VoteOption } from './types';
+import { Poll } from './types';
 
 interface VotingStore {
   polls: Poll[];
@@ -116,7 +116,7 @@ export const useVotingStore = create<VotingStore>()(
           return {
             ...data,
             userVotes: data.userVotes || {},
-            polls: (data.polls || []).map((poll: any) => ({
+            polls: (data.polls || []).map((poll: { createdAt: string; showResults?: boolean; [key: string]: unknown }) => ({
               ...poll,
               createdAt: poll.createdAt,
               showResults: poll.showResults ?? false,

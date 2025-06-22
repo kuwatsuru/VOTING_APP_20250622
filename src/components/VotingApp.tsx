@@ -14,7 +14,6 @@ type View = 'home' | 'create' | 'list' | 'poll';
 export function VotingApp() {
   const [currentView, setCurrentView] = useState<View>('home');
   const [selectedPollId, setSelectedPollId] = useState<string | null>(null);
-  const currentPoll = useVotingStore((state) => state.currentPoll);
 
   const handleCreatePoll = () => {
     setCurrentView('create');

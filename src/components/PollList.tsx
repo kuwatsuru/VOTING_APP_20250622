@@ -24,7 +24,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
 
   useEffect(() => {
     fetchPolls();
-    const subscription = subscribeToPolls();
+    subscribeToPolls();
     
     return () => {
       unsubscribeFromPolls();

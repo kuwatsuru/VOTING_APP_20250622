@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from './supabase';
-import { Poll, VoteOption } from './types';
+import { Poll } from './types';
 
 interface SupabaseVotingStore {
   polls: Poll[];
