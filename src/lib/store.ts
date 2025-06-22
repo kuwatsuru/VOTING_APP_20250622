@@ -96,46 +96,6 @@ export const useVotingStore = create<VotingStore>()(
     }),
     {
       name: 'voting-storage',
-      // シリアライゼーション
-      serialize: (state) => JSON.stringify({
-        ...state,
-        polls: state.polls.map(poll => ({
-          ...poll,
-          createdAt: poll.createdAt instanceof Date ? poll.createdAt.toISOString() : poll.createdAt,
-        })),
-        currentPoll: state.currentPoll ? {
-          ...state.currentPoll,
-          createdAt: state.currentPoll.createdAt instanceof Date ? state.currentPoll.createdAt.toISOString() : state.currentPoll.createdAt,
-        } : null,
-      }),
-      // デシリアライゼーション
-      deserialize: (str) => {
-        try {
-          const data = JSON.parse(str);
-          
-          return {
-            ...data,
-            userVotes: data.userVotes || {},
-            polls: (data.polls || []).map((poll: { createdAt: string; showResults?: boolean; [key: string]: unknown }) => ({
-              ...poll,
-              createdAt: poll.createdAt,
-              showResults: poll.showResults ?? false,
-            })),
-            currentPoll: data.currentPoll ? {
-              ...data.currentPoll,
-              createdAt: data.currentPoll.createdAt,
-              showResults: data.currentPoll.showResults ?? false,
-            } : null,
-          };
-        } catch (error) {
-          console.error('Failed to deserialize voting store:', error);
-          return {
-            polls: [],
-            currentPoll: null,
-            userVotes: {},
-          };
-        }
-      },
     }
   )
 ); 
