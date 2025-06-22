@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreatePollForm } from './CreatePollForm';
 import { PollList } from './PollList';
 import { PollDisplay } from './PollDisplay';
-import { useVotingStore } from '@/lib/store';
 import { Plus, List, Home } from 'lucide-react';
 
 type View = 'home' | 'create' | 'list' | 'poll';
