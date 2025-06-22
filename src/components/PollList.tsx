@@ -1,18 +1,61 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useVotingStore } from '@/lib/store';
-import { Calendar, Users, ArrowRight } from 'lucide-react';
+import { useSupabaseVotingStore } from '@/lib/supabaseStore';
+import { Calendar, Users, ArrowRight, Trash2 } from 'lucide-react';
 
 interface PollListProps {
   onSelectPoll: (pollId: string) => void;
 }
 
 export function PollList({ onSelectPoll }: PollListProps) {
-  const polls = useVotingStore((state) => state.polls);
-  const getUserVote = useVotingStore((state) => state.getUserVote);
+  const { 
+    polls, 
+    loading, 
+    error, 
+    fetchPolls, 
+    deletePoll, 
+    subscribeToPolls, 
+    unsubscribeFromPolls 
+  } = useSupabaseVotingStore();
+
+  useEffect(() => {
+    fetchPolls();
+    const subscription = subscribeToPolls();
+    
+    return () => {
+      unsubscribeFromPolls();
+    };
+  }, [fetchPolls, subscribeToPolls, unsubscribeFromPolls]);
+
+  const handleDeletePoll = async (pollId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm('この投票を削除しますか？この操作は取り消せません。')) {
+      await deletePoll(pollId);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto text-center py-8">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-4xl mx-auto text-center py-8">
+        <p className="text-red-500">エラー: {error}</p>
+        <Button onClick={fetchPolls} className="mt-4">
+          再試行
+        </Button>
+      </div>
+    );
+  }
 
   if (polls.length === 0) {
     return (
@@ -41,17 +84,26 @@ export function PollList({ onSelectPoll }: PollListProps) {
         const totalVotes = poll.options.reduce((sum, option) => sum + option.votes, 0);
         const maxVotes = Math.max(...poll.options.map(option => option.votes));
         const winningOption = poll.options.find(option => option.votes === maxVotes && maxVotes > 0);
-        const userVote = getUserVote(poll.id);
-        const showResults = poll.showResults || !!userVote;
+        const showResults = poll.showResults;
 
         return (
           <Card key={poll.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl">{poll.title}</CardTitle>
-                <Badge variant={poll.isActive ? "default" : "secondary"}>
-                  {poll.isActive ? "アクティブ" : "終了"}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant={poll.isActive ? "default" : "secondary"}>
+                    {poll.isActive ? "アクティブ" : "終了"}
+                  </Badge>
+                  <Button
+                    onClick={(e) => handleDeletePoll(poll.id, e)}
+                    variant="outline"
+                    size="sm"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               {poll.description && (
                 <p className="text-muted-foreground">{poll.description}</p>

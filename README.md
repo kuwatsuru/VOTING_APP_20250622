@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 多数決アプリ
 
-## Getting Started
+Next.js + React + TypeScript + Supabase で作成したリアルタイム多数決（投票）アプリです。
 
-First, run the development server:
+## 主な機能
+
+- 投票テーマの作成
+- 複数の選択肢を設定可能
+- 投票は1人1回のみ（ブラウザベースの投票者ID）
+- 投票前は得票数・結果が非表示
+- 投票後に結果・得票数・最多票が表示
+- **リアルタイム投票結果共有**（Supabase連携）
+- **投票の削除機能**
+- モダンなUI/UX（Tailwind CSS, Radix UI）
+
+## セットアップ方法
+
+### 1. リポジトリをクローン
+
+```bash
+git clone https://github.com/kuwatsuru/VOTING_APP_20250622.git
+cd VOTING_APP_20250622
+```
+
+### 2. 依存パッケージをインストール
+
+```bash
+npm install
+```
+
+### 3. Supabaseのセットアップ
+
+1. [Supabase](https://supabase.com)でプロジェクトを作成
+2. `supabase-schema.sql`の内容をSQLエディタで実行
+3. プロジェクトURLとanon keyを取得
+
+### 4. 環境変数の設定
+
+`.env.local`ファイルを作成：
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 5. 開発サーバーを起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 6. ブラウザでアクセス
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+[http://localhost:3000](http://localhost:3000) または [http://localhost:3001](http://localhost:3001)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 使い方
 
-## Learn More
+1. 「新しい投票を作成」ボタンから投票テーマと選択肢を入力して作成
+2. 投票一覧から投票を選択
+3. 投票を行うと、得票数・結果が表示されます
+4. **リアルタイムで他のユーザーの投票結果も反映されます**
+5. 投票一覧の🗑️ボタンで投票を削除可能
 
-To learn more about Next.js, take a look at the following resources:
+## 技術スタック
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
+- Zustand（状態管理）
+- Radix UI
+- **Supabase（リアルタイムデータベース）**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## データベース構造
 
-## Deploy on Vercel
+- `polls`: 投票テーブル
+- `options`: 選択肢テーブル
+- `votes`: 投票記録テーブル
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## ライセンス
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT License
