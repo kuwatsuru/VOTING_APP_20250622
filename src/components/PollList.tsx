@@ -92,7 +92,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
     const maxVotes = Math.max(...(Object.values(poll.votes) as number[]));
     if (maxVotes === 0) return null;
     return Object.entries(poll.votes).find(
-      ([_, votes]) => votes === maxVotes
+      ([, votes]) => votes === maxVotes
     )?.[0];
   };
 
