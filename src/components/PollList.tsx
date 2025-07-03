@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSupabaseVotingStore } from "@/lib/supabaseStore";
+import { useSupabaseVotingStore, Poll, PollOption } from "@/lib/supabaseStore";
 import { useUserStore } from "@/lib/userStore";
 import { ErrorDisplay } from "@/components/ErrorDisplay";
 import {
@@ -99,19 +99,20 @@ export function PollList({ onSelectPoll }: PollListProps) {
     });
   };
 
-  const getTotalVotes = (poll: any) => {
+  const getTotalVotes = (poll: Poll) => {
     return poll.options.reduce(
-      (sum: number, option: any) => sum + option.votes,
+      (sum: number, option: PollOption) => sum + option.votes,
       0
     );
   };
 
-  const getWinningOption = (poll: any) => {
+  const getWinningOption = (poll: Poll) => {
     const maxVotes = Math.max(
-      ...poll.options.map((option: any) => option.votes)
+      ...poll.options.map((option: PollOption) => option.votes)
     );
     if (maxVotes === 0) return null;
-    return poll.options.find((option: any) => option.votes === maxVotes)?.text;
+    return poll.options.find((option: PollOption) => option.votes === maxVotes)
+      ?.text;
   };
 
   if (!username) {
@@ -136,8 +137,8 @@ export function PollList({ onSelectPoll }: PollListProps) {
 
   if (error) {
     return (
-      <ErrorDisplay 
-        error={error} 
+      <ErrorDisplay
+        error={error}
         onRetry={() => username && fetchPolls(username)}
         title="投票の取得に失敗しました"
       />

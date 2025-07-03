@@ -59,38 +59,23 @@ interface SupabaseVotingStore {
 }
 
 // エラーメッセージを詳細に表示する関数
-const getErrorMessage = (error: any): string => {
+const getErrorMessage = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }
   if (typeof error === "string") {
     return error;
   }
-  if (error?.message) {
-    return error.message;
+  if (error && typeof error === "object" && "message" in error) {
+    return String(error.message);
   }
-  if (error?.error_description) {
-    return error.error_description;
+  if (error && typeof error === "object" && "error_description" in error) {
+    return String(error.error_description);
   }
-  if (error?.details) {
-    return error.details;
+  if (error && typeof error === "object" && "details" in error) {
+    return String(error.details);
   }
   return "Unknown error occurred";
-};
-
-// ユニークな投票者IDを生成（実際のアプリでは認証システムを使用）
-const generateVoterId = () => {
-  if (typeof window !== "undefined") {
-    let voterId = localStorage.getItem("voter-id");
-    if (!voterId) {
-      voterId = `voter_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-      localStorage.setItem("voter-id", voterId);
-    }
-    return voterId;
-  }
-  return `voter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 };
 
 export const useSupabaseVotingStore = create<SupabaseVotingStore>(

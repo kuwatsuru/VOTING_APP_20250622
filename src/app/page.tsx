@@ -10,7 +10,7 @@ import { CreatePollForm } from "@/components/CreatePollForm";
 import { PollList } from "@/components/PollList";
 import { PollDisplay } from "@/components/PollDisplay";
 import { useUserStore } from "@/lib/userStore";
-import { Users, Vote, Plus, List, Eye } from "lucide-react";
+import { Users, Vote, Plus, List } from "lucide-react";
 
 export default function Home() {
   const { username, setUsername } = useUserStore();
