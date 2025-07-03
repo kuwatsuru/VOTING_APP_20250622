@@ -29,7 +29,9 @@ export function PollList({ onSelectPoll }: PollListProps) {
   const [viewMode, setViewMode] = useState<"all" | "my" | "voted">("all");
 
   // チーム内の投票のみを取得
-  const teamPolls = username ? getTeamPolls(username) : [];
+  const teamPolls = useMemo(() => {
+    return username ? getTeamPolls(username) : [];
+  }, [username, getTeamPolls]);
 
   // フィルタリングされた投票一覧
   const filteredPolls = useMemo(() => {
@@ -79,14 +81,14 @@ export function PollList({ onSelectPoll }: PollListProps) {
     });
   };
 
-  const getTotalVotes = (poll: any) => {
+  const getTotalVotes = (poll: { votes: Record<string, number> }) => {
     return Object.values(poll.votes).reduce(
-      (sum: number, votes: any) => sum + votes,
+      (sum: number, votes: number) => sum + votes,
       0
     );
   };
 
-  const getWinningOption = (poll: any) => {
+  const getWinningOption = (poll: { votes: Record<string, number> }) => {
     const maxVotes = Math.max(...(Object.values(poll.votes) as number[]));
     if (maxVotes === 0) return null;
     return Object.entries(poll.votes).find(

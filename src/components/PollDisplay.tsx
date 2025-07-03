@@ -8,7 +8,6 @@ import { usePollStore } from "@/lib/pollStore";
 import { useUserStore } from "@/lib/userStore";
 import {
   Vote,
-  Users,
   User,
   Calendar,
   CheckCircle,
@@ -55,7 +54,7 @@ export function PollDisplay({ pollId }: PollDisplayProps) {
   }
 
   const totalVotes = Object.values(poll.votes).reduce(
-    (sum: number, votes: any) => sum + votes,
+    (sum: number, votes: number) => sum + votes,
     0
   );
   const maxVotes = Math.max(...(Object.values(poll.votes) as number[]));

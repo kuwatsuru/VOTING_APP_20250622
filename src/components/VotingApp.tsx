@@ -8,7 +8,7 @@ import { PollList } from "./PollList";
 import { PollDisplay } from "./PollDisplay";
 import { UsernameInput } from "./UsernameInput";
 import { useUserStore } from "@/lib/userStore";
-import { Plus, List, Home, Users, User, Shield } from "lucide-react";
+import { Plus, List, Home, Shield } from "lucide-react";
 
 type View = "home" | "create" | "list" | "poll";
 

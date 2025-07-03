@@ -6,12 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserStore } from "@/lib/userStore";
 import { usePollStore } from "@/lib/pollStore";
-import { User, LogOut, History, Shield, Users } from "lucide-react";
+import { LogOut, History, Shield, Users } from "lucide-react";
 
 export function UsernameInput() {
   const [inputUsername, setInputUsername] = useState("");
-  const { username, setUsername, clearUsername, userVotes, hasUserVoted } =
-    useUserStore();
+  const { username, setUsername, clearUsername, userVotes } = useUserStore();
   const { getTeamPolls } = usePollStore();
 
   const handleSubmit = (e: React.FormEvent) => {
