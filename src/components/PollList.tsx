@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSupabaseVotingStore } from "@/lib/supabaseStore";
 import { useUserStore } from "@/lib/userStore";
+import { ErrorDisplay } from "@/components/ErrorDisplay";
 import {
   Calendar,
   Users,
@@ -135,12 +136,11 @@ export function PollList({ onSelectPoll }: PollListProps) {
 
   if (error) {
     return (
-      <div className="w-full max-w-4xl mx-auto text-center py-8">
-        <p className="text-red-500">エラー: {error}</p>
-        <Button onClick={() => fetchPolls(username)} className="mt-4">
-          再試行
-        </Button>
-      </div>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={() => username && fetchPolls(username)}
+        title="投票の取得に失敗しました"
+      />
     );
   }
 

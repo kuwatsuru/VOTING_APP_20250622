@@ -58,6 +58,26 @@ interface SupabaseVotingStore {
   unsubscribeFromPolls: () => void;
 }
 
+// エラーメッセージを詳細に表示する関数
+const getErrorMessage = (error: any): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === "string") {
+    return error;
+  }
+  if (error?.message) {
+    return error.message;
+  }
+  if (error?.error_description) {
+    return error.error_description;
+  }
+  if (error?.details) {
+    return error.details;
+  }
+  return "Unknown error occurred";
+};
+
 // ユニークな投票者IDを生成（実際のアプリでは認証システムを使用）
 const generateVoterId = () => {
   if (typeof window !== "undefined") {
@@ -83,8 +103,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
     fetchPolls: async (teamName: string) => {
       set({ loading: true, error: null });
       try {
-        // チーム名を設定
-        await supabase.rpc("set_team_name", { team_name: teamName });
+        console.log("Fetching polls for team:", teamName);
 
         const { data: pollsData, error: pollsError } = await supabase
           .from("polls")
@@ -92,7 +111,12 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .eq("team_name", teamName)
           .order("created_at", { ascending: false });
 
-        if (pollsError) throw pollsError;
+        if (pollsError) {
+          console.error("Error fetching polls:", pollsError);
+          throw pollsError;
+        }
+
+        console.log("Polls data:", pollsData);
 
         const pollsWithOptions = await Promise.all(
           pollsData.map(async (poll) => {
@@ -101,7 +125,14 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
               .select("*")
               .eq("poll_id", poll.id);
 
-            if (optionsError) throw optionsError;
+            if (optionsError) {
+              console.error(
+                "Error fetching options for poll:",
+                poll.id,
+                optionsError
+              );
+              throw optionsError;
+            }
 
             return {
               id: poll.id,
@@ -121,20 +152,19 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           })
         );
 
+        console.log("Polls with options:", pollsWithOptions);
         set({ polls: pollsWithOptions, loading: false });
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in fetchPolls:", error);
+        set({ error: errorMessage, loading: false });
       }
     },
 
     fetchPollById: async (id: string, teamName: string) => {
       set({ loading: true, error: null });
       try {
-        // チーム名を設定
-        await supabase.rpc("set_team_name", { team_name: teamName });
+        console.log("Fetching poll by ID:", id, "for team:", teamName);
 
         const { data: pollData, error: pollError } = await supabase
           .from("polls")
@@ -143,14 +173,20 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .eq("team_name", teamName)
           .single();
 
-        if (pollError) throw pollError;
+        if (pollError) {
+          console.error("Error fetching poll:", pollError);
+          throw pollError;
+        }
 
         const { data: optionsData, error: optionsError } = await supabase
           .from("options")
           .select("*")
           .eq("poll_id", id);
 
-        if (optionsError) throw optionsError;
+        if (optionsError) {
+          console.error("Error fetching options:", optionsError);
+          throw optionsError;
+        }
 
         const poll: Poll = {
           id: pollData.id,
@@ -171,10 +207,9 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
         set({ currentPoll: poll, loading: false });
         return poll;
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in fetchPollById:", error);
+        set({ error: errorMessage, loading: false });
         return null;
       }
     },
@@ -188,6 +223,14 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
     ) => {
       set({ loading: true, error: null });
       try {
+        console.log("Creating poll:", {
+          title,
+          description,
+          options,
+          teamName,
+          createdBy,
+        });
+
         const pollId = `poll_${Date.now()}_${Math.random()
           .toString(36)
           .substr(2, 9)}`;
@@ -203,7 +246,10 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           show_results: false,
         });
 
-        if (pollError) throw pollError;
+        if (pollError) {
+          console.error("Error creating poll:", pollError);
+          throw pollError;
+        }
 
         // 選択肢を作成
         const optionsToInsert = options.map((text, index) => ({
@@ -217,15 +263,18 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .from("options")
           .insert(optionsToInsert);
 
-        if (optionsError) throw optionsError;
+        if (optionsError) {
+          console.error("Error creating options:", optionsError);
+          throw optionsError;
+        }
 
+        console.log("Poll created successfully");
         // 投票一覧を再取得
         await get().fetchPolls(teamName);
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in createPoll:", error);
+        set({ error: errorMessage, loading: false });
       }
     },
 
@@ -237,6 +286,8 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
     ) => {
       set({ loading: true, error: null });
       try {
+        console.log("Voting:", { pollId, optionId, teamName, voterId });
+
         // 既に投票済みかチェック
         const { data: existingVote, error: checkError } = await supabase
           .from("votes")
@@ -246,6 +297,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .single();
 
         if (checkError && checkError.code !== "PGRST116") {
+          console.error("Error checking existing vote:", checkError);
           throw checkError;
         }
 
@@ -261,7 +313,10 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           team_name: teamName,
         });
 
-        if (voteError) throw voteError;
+        if (voteError) {
+          console.error("Error recording vote:", voteError);
+          throw voteError;
+        }
 
         // 現在の投票数を取得して+1
         const { data: currentOption, error: getError } = await supabase
@@ -270,7 +325,10 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .eq("id", optionId)
           .single();
 
-        if (getError) throw getError;
+        if (getError) {
+          console.error("Error getting current votes:", getError);
+          throw getError;
+        }
 
         // 投票数を更新
         const { error: updateError } = await supabase
@@ -278,7 +336,10 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .update({ votes: (currentOption.votes || 0) + 1 })
           .eq("id", optionId);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error("Error updating vote count:", updateError);
+          throw updateError;
+        }
 
         // 投票結果を表示
         const { error: showResultsError } = await supabase
@@ -286,28 +347,36 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .update({ show_results: true })
           .eq("id", pollId);
 
-        if (showResultsError) throw showResultsError;
+        if (showResultsError) {
+          console.error("Error showing results:", showResultsError);
+          throw showResultsError;
+        }
 
+        console.log("Vote recorded successfully");
         // 投票一覧を再取得
         await get().fetchPolls(teamName);
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in vote:", error);
+        set({ error: errorMessage, loading: false });
       }
     },
 
     deletePoll: async (pollId: string, teamName: string) => {
       set({ loading: true, error: null });
       try {
+        console.log("Deleting poll:", pollId, "for team:", teamName);
+
         // 関連する投票を削除
         const { error: votesError } = await supabase
           .from("votes")
           .delete()
           .eq("poll_id", pollId);
 
-        if (votesError) throw votesError;
+        if (votesError) {
+          console.error("Error deleting votes:", votesError);
+          throw votesError;
+        }
 
         // 選択肢を削除
         const { error: optionsError } = await supabase
@@ -315,7 +384,10 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .delete()
           .eq("poll_id", pollId);
 
-        if (optionsError) throw optionsError;
+        if (optionsError) {
+          console.error("Error deleting options:", optionsError);
+          throw optionsError;
+        }
 
         // 投票を削除
         const { error: pollError } = await supabase
@@ -324,40 +396,50 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           .eq("id", pollId)
           .eq("team_name", teamName);
 
-        if (pollError) throw pollError;
+        if (pollError) {
+          console.error("Error deleting poll:", pollError);
+          throw pollError;
+        }
 
+        console.log("Poll deleted successfully");
         // 投票一覧を再取得
         await get().fetchPolls(teamName);
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in deletePoll:", error);
+        set({ error: errorMessage, loading: false });
       }
     },
 
     showPollResults: async (pollId: string, teamName: string) => {
       set({ loading: true, error: null });
       try {
+        console.log("Showing results for poll:", pollId);
+
         const { error } = await supabase
           .from("polls")
           .update({ show_results: true })
           .eq("id", pollId)
           .eq("team_name", teamName);
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error showing poll results:", error);
+          throw error;
+        }
 
+        console.log("Poll results shown successfully");
         // 投票一覧を再取得
         await get().fetchPolls(teamName);
       } catch (error) {
-        set({
-          error: error instanceof Error ? error.message : "Unknown error",
-          loading: false,
-        });
+        const errorMessage = getErrorMessage(error);
+        console.error("Error in showPollResults:", error);
+        set({ error: errorMessage, loading: false });
       }
     },
 
     subscribeToPolls: (teamName: string) => {
+      console.log("Subscribing to polls for team:", teamName);
+
       const subscription = supabase
         .channel("polls_changes")
         .on(
@@ -369,6 +451,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
             filter: `team_name=eq.${teamName}`,
           },
           () => {
+            console.log("Polls changed, refetching...");
             get().fetchPolls(teamName);
           }
         )
@@ -380,6 +463,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
             table: "options",
           },
           () => {
+            console.log("Options changed, refetching...");
             get().fetchPolls(teamName);
           }
         )
@@ -392,6 +476,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
             filter: `team_name=eq.${teamName}`,
           },
           () => {
+            console.log("Votes changed, refetching...");
             get().fetchPolls(teamName);
           }
         )
@@ -401,6 +486,7 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
     },
 
     unsubscribeFromPolls: () => {
+      console.log("Unsubscribing from polls");
       supabase.removeAllChannels();
     },
   })
