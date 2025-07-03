@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { usePollStore } from "@/lib/pollStore";
+import { useSupabaseVotingStore } from "@/lib/supabaseStore";
 import { useUserStore } from "@/lib/userStore";
 import {
   Calendar,
@@ -23,26 +23,41 @@ interface PollListProps {
 }
 
 export function PollList({ onSelectPoll }: PollListProps) {
-  const { getTeamPolls, deletePoll } = usePollStore();
+  const {
+    polls,
+    loading,
+    error,
+    fetchPolls,
+    deletePoll,
+    subscribeToPolls,
+    unsubscribeFromPolls,
+  } = useSupabaseVotingStore();
   const { username, hasUserVoted } = useUserStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "my" | "voted">("all");
 
   // チーム内の投票のみを取得
-  const teamPolls = useMemo(() => {
-    return username ? getTeamPolls(username) : [];
-  }, [username, getTeamPolls]);
+  useEffect(() => {
+    if (username) {
+      fetchPolls(username);
+      subscribeToPolls(username);
+
+      return () => {
+        unsubscribeFromPolls();
+      };
+    }
+  }, [username, fetchPolls, subscribeToPolls, unsubscribeFromPolls]);
 
   // フィルタリングされた投票一覧
   const filteredPolls = useMemo(() => {
-    let filtered = teamPolls;
+    let filtered = polls;
 
     // 検索フィルター
     if (searchTerm) {
       filtered = filtered.filter(
         (poll) =>
           poll.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          poll.description.toLowerCase().includes(searchTerm.toLowerCase())
+          poll.description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -62,12 +77,14 @@ export function PollList({ onSelectPoll }: PollListProps) {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }, [teamPolls, searchTerm, viewMode, username, hasUserVoted]);
+  }, [polls, searchTerm, viewMode, username, hasUserVoted]);
 
-  const handleDeletePoll = (pollId: string, e: React.MouseEvent) => {
+  const handleDeletePoll = async (pollId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!username) return;
+
     if (confirm("この投票を削除しますか？この操作は取り消せません。")) {
-      deletePoll(pollId);
+      await deletePoll(pollId, username);
     }
   };
 
@@ -81,19 +98,19 @@ export function PollList({ onSelectPoll }: PollListProps) {
     });
   };
 
-  const getTotalVotes = (poll: { votes: Record<string, number> }) => {
-    return Object.values(poll.votes).reduce(
-      (sum: number, votes: number) => sum + votes,
+  const getTotalVotes = (poll: any) => {
+    return poll.options.reduce(
+      (sum: number, option: any) => sum + option.votes,
       0
     );
   };
 
-  const getWinningOption = (poll: { votes: Record<string, number> }) => {
-    const maxVotes = Math.max(...(Object.values(poll.votes) as number[]));
+  const getWinningOption = (poll: any) => {
+    const maxVotes = Math.max(
+      ...poll.options.map((option: any) => option.votes)
+    );
     if (maxVotes === 0) return null;
-    return Object.entries(poll.votes).find(
-      ([, votes]) => votes === maxVotes
-    )?.[0];
+    return poll.options.find((option: any) => option.votes === maxVotes)?.text;
   };
 
   if (!username) {
@@ -108,7 +125,26 @@ export function PollList({ onSelectPoll }: PollListProps) {
     );
   }
 
-  if (teamPolls.length === 0) {
+  if (loading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto text-center py-8">
+        <p>読み込み中...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="w-full max-w-4xl mx-auto text-center py-8">
+        <p className="text-red-500">エラー: {error}</p>
+        <Button onClick={() => fetchPolls(username)} className="mt-4">
+          再試行
+        </Button>
+      </div>
+    );
+  }
+
+  if (polls.length === 0) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardContent className="p-8 text-center">
@@ -136,7 +172,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
         </div>
         <p className="text-blue-600 font-medium">チーム: {username}</p>
         <p className="text-muted-foreground">
-          全{filteredPolls.length}件の投票（チーム内{teamPolls.length}件中）
+          全{filteredPolls.length}件の投票（チーム内{polls.length}件中）
         </p>
       </div>
 
