@@ -11,7 +11,7 @@ import { useUserStore } from "@/lib/userStore";
 import { Users, Vote, Plus, List } from "lucide-react";
 
 export default function Home() {
-  const { username, memberName, setUsername, clearUsername } = useUserStore();
+  const { username, memberName, clearUsername } = useUserStore();
   const [selectedPollId, setSelectedPollId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("list");
 
