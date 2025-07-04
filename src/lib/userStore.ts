@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface UserState {
-  username: string | null;
+  username: string | null; // チーム名
+  memberName: string | null; // 個人名
   setUsername: (username: string) => void;
+  setMemberName: (memberName: string) => void;
   clearUsername: () => void;
-  userVotes: Record<string, string[]>; // ユーザー名 -> 投票したポールIDの配列
+  clearMemberName: () => void;
+  userVotes: Record<string, string[]>; // 個人名 -> 投票したポールIDの配列
   addUserVote: (pollId: string) => void;
   hasUserVoted: (pollId: string) => boolean;
 }
@@ -14,27 +17,30 @@ export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
       username: null,
+      memberName: null,
       setUsername: (username: string) => set({ username }),
+      setMemberName: (memberName: string) => set({ memberName }),
       clearUsername: () => set({ username: null }),
+      clearMemberName: () => set({ memberName: null }),
       userVotes: {},
       addUserVote: (pollId: string) => {
-        const { username, userVotes } = get();
-        if (!username) return;
+        const { memberName, userVotes } = get();
+        if (!memberName) return;
 
-        const currentVotes = userVotes[username] || [];
+        const currentVotes = userVotes[memberName] || [];
         if (!currentVotes.includes(pollId)) {
           set({
             userVotes: {
               ...userVotes,
-              [username]: [...currentVotes, pollId],
+              [memberName]: [...currentVotes, pollId],
             },
           });
         }
       },
       hasUserVoted: (pollId: string) => {
-        const { username, userVotes } = get();
-        if (!username) return false;
-        return (userVotes[username] || []).includes(pollId);
+        const { memberName, userVotes } = get();
+        if (!memberName) return false;
+        return (userVotes[memberName] || []).includes(pollId);
       },
     }),
     {

@@ -14,7 +14,7 @@ export function CreatePollForm() {
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const { createPoll, loading, error } = useSupabaseVotingStore();
-  const { username } = useUserStore();
+  const { username, memberName } = useUserStore();
 
   const handleAddOption = () => {
     setOptions([...options, ""]);
@@ -34,8 +34,8 @@ export function CreatePollForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!username) {
-      alert("チーム名を入力してください");
+    if (!username || !memberName) {
+      alert("チーム名とメンバー名を入力してください");
       return;
     }
     if (title.trim() && options.every((opt) => opt.trim())) {
@@ -44,7 +44,7 @@ export function CreatePollForm() {
         description.trim(),
         options.map((opt) => opt.trim()),
         username,
-        username
+        memberName
       );
       setTitle("");
       setDescription("");
@@ -53,12 +53,12 @@ export function CreatePollForm() {
     }
   };
 
-  if (!username) {
+  if (!username || !memberName) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardContent className="pt-6">
           <p className="text-center text-muted-foreground">
-            投票を作成するには、まずチーム名を入力してください。
+            投票を作成するには、まずチーム名とメンバー名を入力してください。
           </p>
         </CardContent>
       </Card>
@@ -72,7 +72,7 @@ export function CreatePollForm() {
           新しい投票を作成
         </CardTitle>
         <div className="text-center space-y-2">
-          <p className="text-muted-foreground">作成者: {username}</p>
+          <p className="text-muted-foreground">作成者: {memberName}</p>
           <div className="flex items-center justify-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
             <Users className="h-4 w-4" />
             チーム: {username}

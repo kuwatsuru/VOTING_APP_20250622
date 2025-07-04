@@ -23,7 +23,7 @@ interface PollDisplayProps {
 export function PollDisplay({ pollId }: PollDisplayProps) {
   const { currentPoll, loading, error, fetchPollById, vote } =
     useSupabaseVotingStore();
-  const { username, hasUserVoted, addUserVote } = useUserStore();
+  const { username, memberName, hasUserVoted, addUserVote } = useUserStore();
 
   useEffect(() => {
     if (username && pollId) {
@@ -91,11 +91,11 @@ export function PollDisplay({ pollId }: PollDisplayProps) {
   const maxVotes = Math.max(
     ...currentPoll.options.map((option) => option.votes)
   );
-  const hasVoted = username ? hasUserVoted(pollId) : false;
+  const hasVoted = memberName ? hasUserVoted(pollId) : false;
 
   const handleVote = async (optionId: string) => {
-    if (!username) {
-      alert("投票するには、まずチーム名を入力してください");
+    if (!username || !memberName) {
+      alert("投票するには、まずチーム名とメンバー名を入力してください");
       return;
     }
 
@@ -105,7 +105,7 @@ export function PollDisplay({ pollId }: PollDisplayProps) {
     }
 
     try {
-      await vote(pollId, optionId, username, username);
+      await vote(pollId, optionId, username, memberName);
       addUserVote(pollId);
       alert("投票が完了しました！");
     } catch (error) {
@@ -198,7 +198,7 @@ export function PollDisplay({ pollId }: PollDisplayProps) {
 
               <Progress value={percentage} className="h-2" />
 
-              {currentPoll.isActive && !hasVoted && username && (
+              {currentPoll.isActive && !hasVoted && username && memberName && (
                 <Button
                   onClick={() => handleVote(option.id)}
                   variant="outline"
@@ -216,7 +216,15 @@ export function PollDisplay({ pollId }: PollDisplayProps) {
         {!username && (
           <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <p className="text-sm text-yellow-800 font-medium">
-              ⚠️ 投票するには、まずチーム名を入力してください
+              ⚠️ 投票するには、まずチーム名とメンバー名を入力してください
+            </p>
+          </div>
+        )}
+
+        {!memberName && username && (
+          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800 font-medium">
+              ⚠️ 投票するには、メンバー名を入力してください
             </p>
           </div>
         )}

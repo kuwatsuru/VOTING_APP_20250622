@@ -33,7 +33,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
     subscribeToPolls,
     unsubscribeFromPolls,
   } = useSupabaseVotingStore();
-  const { username, hasUserVoted } = useUserStore();
+  const { username, memberName, hasUserVoted } = useUserStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<"all" | "my" | "voted">("all");
 
@@ -63,10 +63,10 @@ export function PollList({ onSelectPoll }: PollListProps) {
     }
 
     // ビューモードフィルター
-    if (username) {
+    if (username && memberName) {
       switch (viewMode) {
         case "my":
-          filtered = filtered.filter((poll) => poll.createdBy === username);
+          filtered = filtered.filter((poll) => poll.createdBy === memberName);
           break;
         case "voted":
           filtered = filtered.filter((poll) => hasUserVoted(poll.id));
@@ -78,7 +78,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
-  }, [polls, searchTerm, viewMode, username, hasUserVoted]);
+  }, [polls, searchTerm, viewMode, username, memberName, hasUserVoted]);
 
   const handleDeletePoll = async (pollId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -115,12 +115,12 @@ export function PollList({ onSelectPoll }: PollListProps) {
       ?.text;
   };
 
-  if (!username) {
+  if (!username || !memberName) {
     return (
       <Card className="w-full max-w-2xl mx-auto">
         <CardContent className="p-8 text-center">
           <p className="text-muted-foreground">
-            チーム名を入力して投票を表示してください
+            チーム名とメンバー名を入力して投票を表示してください
           </p>
         </CardContent>
       </Card>
@@ -266,7 +266,7 @@ export function PollList({ onSelectPoll }: PollListProps) {
                     <Badge variant={poll.isActive ? "default" : "secondary"}>
                       {poll.isActive ? "アクティブ" : "終了"}
                     </Badge>
-                    {poll.createdBy === username && (
+                    {poll.createdBy === memberName && (
                       <Button
                         onClick={(e) => handleDeletePoll(poll.id, e)}
                         variant="outline"

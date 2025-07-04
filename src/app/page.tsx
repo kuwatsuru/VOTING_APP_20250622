@@ -2,31 +2,18 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreatePollForm } from "@/components/CreatePollForm";
 import { PollList } from "@/components/PollList";
 import { PollDisplay } from "@/components/PollDisplay";
+import { UsernameInput } from "@/components/UsernameInput";
 import { useUserStore } from "@/lib/userStore";
 import { Users, Vote, Plus, List } from "lucide-react";
 
 export default function Home() {
-  const { username, setUsername } = useUserStore();
+  const { username, memberName, setUsername, clearUsername } = useUserStore();
   const [selectedPollId, setSelectedPollId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("list");
-
-  const handleUsernameSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData(e.target as HTMLFormElement);
-    const newUsername = formData.get("username") as string;
-    if (newUsername.trim()) {
-      setUsername(newUsername.trim());
-      setSelectedPollId(null);
-      setActiveTab("list");
-    }
-  };
 
   const handleSelectPoll = (pollId: string) => {
     setSelectedPollId(pollId);
@@ -38,47 +25,36 @@ export default function Home() {
     setActiveTab("list");
   };
 
-  if (!username) {
+  const handleLogout = () => {
+    clearUsername();
+    setSelectedPollId(null);
+    setActiveTab("list");
+  };
+
+  if (!username || !memberName) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold">
-              チーム投票アプリ
-            </CardTitle>
+            <h1 className="text-2xl font-bold">チーム投票アプリ</h1>
             <p className="text-muted-foreground">
-              チーム名を入力して投票を開始しましょう
+              チーム名とメンバー名を入力して投票を開始しましょう
             </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleUsernameSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="username">チーム名</Label>
-                <Input
-                  id="username"
-                  name="username"
-                  placeholder="例: 開発チームA"
-                  required
-                  autoFocus
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                チームに参加
-              </Button>
-            </form>
-            <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">💡 使い方</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• 同じチーム名を入力したメンバー同士で投票を共有</li>
-                <li>• 投票の作成、参加、結果確認が可能</li>
-                <li>• リアルタイムで投票結果を同期</li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+          <UsernameInput />
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-medium text-blue-900 mb-2">💡 使い方</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• 同じチーム名を入力したメンバー同士で投票を共有</li>
+              <li>• 各メンバーが1票ずつ投票可能</li>
+              <li>• 投票の作成、参加、結果確認が可能</li>
+              <li>• リアルタイムで投票結果を同期</li>
+            </ul>
+          </div>
+        </div>
       </div>
     );
   }
@@ -100,15 +76,12 @@ export default function Home() {
                 <Users className="h-4 w-4" />
                 チーム: {username}
               </div>
+              <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                <Users className="h-4 w-4" />
+                メンバー: {memberName}
+              </div>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setUsername("");
-                setSelectedPollId(null);
-                setActiveTab("list");
-              }}
-            >
+            <Button variant="outline" onClick={handleLogout}>
               チームを変更
             </Button>
           </div>

@@ -338,8 +338,17 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
         }
 
         console.log("Vote recorded successfully");
-        // 投票一覧を再取得
+
+        // 投票一覧と現在の投票を再取得
         await get().fetchPolls(teamName);
+
+        // 現在表示中の投票を更新
+        const currentPoll = get().currentPoll;
+        if (currentPoll && currentPoll.id === pollId) {
+          await get().fetchPollById(pollId, teamName);
+        }
+
+        set({ loading: false });
       } catch (error) {
         const errorMessage = getErrorMessage(error);
         console.error("Error in vote:", error);
@@ -450,6 +459,12 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           () => {
             console.log("Options changed, refetching...");
             get().fetchPolls(teamName);
+
+            // 現在表示中の投票も更新
+            const currentPoll = get().currentPoll;
+            if (currentPoll) {
+              get().fetchPollById(currentPoll.id, teamName);
+            }
           }
         )
         .on(
@@ -463,6 +478,12 @@ export const useSupabaseVotingStore = create<SupabaseVotingStore>(
           () => {
             console.log("Votes changed, refetching...");
             get().fetchPolls(teamName);
+
+            // 現在表示中の投票も更新
+            const currentPoll = get().currentPoll;
+            if (currentPoll) {
+              get().fetchPollById(currentPoll.id, teamName);
+            }
           }
         )
         .subscribe();
