@@ -39,7 +39,7 @@ export default function Home() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold">MAJORITY</h1>
+            <h1 className="text-2xl font-bold">MAJORITY（チーム投票アプリ）</h1>
             <p className="text-muted-foreground">
               I <span className="text-red-400 font-bold">don't</span> wanna be the
               minority!
