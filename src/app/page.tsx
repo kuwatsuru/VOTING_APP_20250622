@@ -41,8 +41,7 @@ export default function Home() {
             </div>
             <h1 className="text-2xl font-bold">MAJORITY（チーム投票アプリ）</h1>
             <p className="text-muted-foreground">
-              I don't wanna be the
-              minority!
+              I wanna be the minority!
             </p>
           </div>
           <UsernameInput />
