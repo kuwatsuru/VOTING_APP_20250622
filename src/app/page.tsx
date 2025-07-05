@@ -39,15 +39,16 @@ export default function Home() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
               <Users className="h-8 w-8 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold">チーム投票アプリ</h1>
+            <h1 className="text-2xl font-bold">MAJORITY（チーム投票アプリ）</h1>
             <p className="text-muted-foreground">
-              チーム名とメンバー名を入力して投票を開始しましょう
+              I don't wanna be the
+              minority!
             </p>
           </div>
           <UsernameInput />
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">💡 使い方</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+            <h4 className="font-medium text-gray-900 mb-2"> 機能</h4>
+            <ul className="text-sm text-gray-600 space-y-1">
               <li>• 同じチーム名を入力したメンバー同士で投票を共有</li>
               <li>• 各メンバーが1票ずつ投票可能</li>
               <li>• 投票の作成、参加、結果確認が可能</li>

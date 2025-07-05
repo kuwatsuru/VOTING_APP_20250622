@@ -90,7 +90,7 @@ export function UsernameInput() {
 
           <div className="bg-blue-50 p-3 rounded-lg">
             <p className="text-sm text-blue-800">
-              💡 <strong>チーム機能:</strong>{" "}
+                <strong>チーム機能:</strong>{" "}
               同じチーム名でログインしたメンバー同士で投票を共有できます。
               各メンバーが1票ずつ投票できます。
             </p>
@@ -137,8 +137,7 @@ export function UsernameInput() {
             チームに参加
           </Button>
           <div className="text-xs text-muted-foreground text-center">
-            💡 同じチーム名でログインしたメンバー同士で投票を共有できます。
-            各メンバーが1票ずつ投票できます。
+            同じチーム名でログインしたメンバー同士で投票を共有できます。
           </div>
         </form>
       </CardContent>
